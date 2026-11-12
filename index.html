@@ -1,311 +1,1470 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Comprovantes 58mm</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            display: flex;
-            gap: 30px;
-            max-width: 900px;
-            width: 100%;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .editor {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 380px;
-        }
-        h2 { font-size: 18px; margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
-        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        
-        .receipt {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            line-height: 1.2;
-            background: #fff;
-            padding: 10px;
-            width: 290px;
-            margin: 0 auto;
-            border: 1px dashed #bbb;
-            color: #000;
-            letter-spacing: -0.3px;
-        }
-        .receipt-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 6px;
-            margin-bottom: 6px;
-        }
-        .receipt-logo { font-weight: bold; font-size: 13px; }
-        .receipt-right-info { text-align: right; font-size: 9px; }
-        .receipt-reprint { text-align: center; font-size: 10px; font-weight: bold; margin: 4px 0; border-bottom: 1px dashed #000; padding-bottom: 4px; }
-        .receipt-amount-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 6px;
-            margin-bottom: 6px;
-        }
-        .receipt-datetime { font-size: 10px; }
-        .receipt-value { font-size: 16px; font-weight: bold; text-align: right; }
-        .receipt-center { text-align: center; font-weight: bold; font-size: 11px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
-        .receipt-footer-grid {
-            font-size: 9px;
-            line-height: 1.3;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-        .btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 4px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-        .btn:hover { background-color: #218838; }
-    </style>
-</head>
-<body>
+<title>Impressora KP-1025 — Cópia auxiliar</title>
 
-<div class="container">
-    <div class="editor">
-        <h2>Editar Comprovante</h2>
-        <div class="form-group">
-            <label>Empresa / App</label>
-            <input type="text" id="inp-brand" value="PagBank" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>Via / AUT</label>
-            <textarea id="inp-via" rows="2" oninput="updateReceipt()">VIA ESTABELECIMENTO
-AUT: 314271</textarea>
-        </div>
-        <div class="form-group">
-            <label>Status (ex: REIMPRESSÃO)</label>
-            <input type="text" id="inp-status" value="REIMPRESSÃO" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>Data e Hora</label>
-            <input type="text" id="inp-datetime" value="11/NOV/2026 11:32" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>Cartão (Final)</label>
-            <input type="text" id="inp-card" value="************1793" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="text" id="inp-value" value="22,90" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>Tipo de Transação</label>
-            <input type="text" id="inp-type" value="VENDA DEBITO ELO" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>Nome do Estabelecimento</label>
-            <input type="text" id="inp-store" value="STEAKTOPIA" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>CNPJ</label>
-            <input type="text" id="inp-cnpj" value="52.346.711/0001-16" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>NSU / CV / Outros códigos</label>
-            <textarea id="inp-nsu" rows="4" oninput="updateReceipt()">NSU: 41132712554
-CV: 712954
-LABEL: DEBITO
-AID: A00000004942010
-ARQC: C03308DEFEE1805E</textarea>
-        </div>
-
-        <button class="btn" onclick="printBluetooth()">🖨️ Imprimir via Web Bluetooth</button>
-    </div>
-
-    <div>
-        <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #666; text-align: center;">Visualização (Bobina 58mm)</div>
-        <div class="receipt" id="receipt-preview">
-            <div class="receipt-header">
-                <div>
-                    <div class="receipt-logo" id="prev-brand">PagBank</div>
-                </div>
-                <div class="receipt-right-info" id="prev-via">
-                    VIA ESTABELECIMENTO<br>AUT: 314271
-                </div>
-            </div>
-
-            <div class="receipt-reprint" id="prev-status">REIMPRESSÃO</div>
-
-            <div class="receipt-amount-row">
-                <div>
-                    <div class="receipt-datetime" id="prev-datetime">11/NOV/2026 11:32</div>
-                    <div style="font-size: 9px;" id="prev-card">************1793</div>
-                </div>
-                <div class="receipt-value">R$<span id="prev-value">22,90</span></div>
-            </div>
-
-            <div class="receipt-center" id="prev-type">
-                VENDA DEBITO ELO
-            </div>
-
-            <div class="receipt-footer-grid">
-                <strong id="prev-store">STEAKTOPIA</strong><br>
-                CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span><br>
-                <span id="prev-nsu">NSU: 41132712554<br>CV: 712954<br>LABEL: DEBITO<br>AID: A00000004942010<br>ARQC: C03308DEFEE1805E</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function updateReceipt() {
-    document.getElementById('prev-brand').innerText = document.getElementById('inp-brand').value;
-    document.getElementById('prev-via').innerHTML = document.getElementById('inp-via').value.replace(/\n/g, '<br>');
-    document.getElementById('prev-status').innerText = document.getElementById('inp-status').value;
-    document.getElementById('prev-datetime').innerText = document.getElementById('inp-datetime').value;
-    document.getElementById('prev-card').innerText = document.getElementById('inp-card').value;
-    document.getElementById('prev-value').innerText = document.getElementById('inp-value').value;
-    document.getElementById('prev-type').innerText = document.getElementById('inp-type').value;
-    document.getElementById('prev-store').innerText = document.getElementById('inp-store').value;
-    document.getElementById('prev-cnpj').innerText = document.getElementById('inp-cnpj').value;
-    document.getElementById('prev-nsu').innerHTML = document.getElementById('inp-nsu').value.replace(/\n/g, '<br>');
-}
-
-function buildEscPosText() {
-    const brand = document.getElementById('inp-brand').value;
-    const via = document.getElementById('inp-via').value;
-    const status = document.getElementById('inp-status').value;
-    const datetime = document.getElementById('inp-datetime').value;
-    const card = document.getElementById('inp-card').value;
-    const value = "R$ " + document.getElementById('inp-value').value;
-    const type = document.getElementById('inp-type').value;
-    const store = document.getElementById('inp-store').value;
-    const cnpj = document.getElementById('inp-cnpj').value;
-    
-    // Linha divisória limpa de 32 caracteres (limite exato da bobina de 58mm)
-    const linha = "--------------------------------";
-
-    let escText = "\x1B\x40"; // Inicializa
-    
-    // Cabeçalho: Nome centralizado
-    escText += "\x1B\x61\x01\x1B\x45\x01" + brand + "\x1B\x45\x00\n";
-    
-    // Via e AUT (alinhado à direita/esquerda simulado limpo)
-    escText += "\x1B\x61\x00" + via + "\n";
-    
-    if (status.trim() !== "") {
-        escText += linha + "\n";
-        escText += "\x1B\x61\x01\x1B\x45\x01" + status + "\x1B\x45\x00\n";
+<style>
+    :root {
+        color-scheme: light;
+        font-family: Arial, sans-serif;
+        background: #f3f5f8;
+        color: #202938;
     }
 
-    escText += linha + "\n";
-    
-    // Data/Cartão à esquerda e Valor grande à direita
-    escText += "\x1B\x61\x00" + datetime + "\n" + card + "\n";
-    escText += "\x1B\x61\x02\x1D\x21\x11" + value + "\x1D\x21\x00\n";
-    
-    escText += linha + "\n";
-    
-    // Tipo de Transação centralizado e em negrito
-    escText += "\x1B\x61\x01\x1B\x45\x01" + type + "\x1B\x45\x00\n";
-    
-    escText += linha + "\n";
-    
-    // Dados da loja e códigos técnicos alinhados perfeitamente à esquerda
-    escText += "\x1B\x61\x00";
-    escText += "\x1B\x45\x01" + store + "\x1B\x45\x00\n";
-    escText += "CNPJ: " + cnpj + "\n";
-    escText += "NSU: 41132712554    CV: 712954\n";
-    escText += "LABEL: DEBITO\n";
-    escText += "AID: A00000004942010\n";
-    escText += "ARQC: C03308DEFEE1805E\n";
-    
-    escText += linha + "\n\n\n\n";
+    * {
+        box-sizing: border-box;
+    }
 
-    return escText;
+    body {
+        margin: 0;
+        padding: 24px 16px;
+    }
+
+    main {
+        max-width: 1100px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .panel {
+        background: #fff;
+        padding: 22px;
+        border-radius: 14px;
+        box-shadow: 0 4px 24px #172b4d0c;
+        min-width: 0;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin: 0 0 8px;
+    }
+
+    h2 {
+        font-size: 17px;
+        margin: 0 0 16px;
+    }
+
+    p {
+        line-height: 1.5;
+    }
+
+    .intro {
+        font-size: 13px;
+        color: #586579;
+        margin-top: 0;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .full {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    input, select {
+        width: 100%;
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid #ccd3df;
+        border-radius: 7px;
+        font: inherit;
+        font-size: 14px;
+        background: white;
+    }
+
+    input:focus, select:focus {
+        outline: 2px solid #1976d244;
+        border-color: #1976d2;
+    }
+
+    details {
+        margin-top: 20px;
+        border-top: 1px solid #e4e8ee;
+        padding-top: 15px;
+    }
+
+    summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 14px;
+    }
+
+    .hint {
+        color: #667386;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    button {
+        border: 0;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #e8edf5;
+        color: #26374c;
+    }
+
+    button.primary {
+        background: #146dcc;
+        color: white;
+    }
+
+    button.print {
+        background: #16834d;
+        color: white;
+    }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    #status {
+        margin-top: 14px;
+        padding: 11px;
+        border-radius: 8px;
+        background: #eef3f9;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    #status[data-kind="error"] {
+        background: #fff0f0;
+        color: #9b2020;
+    }
+
+    #status[data-kind="success"] {
+        background: #eaf7ef;
+        color: #17683a;
+    }
+
+    .preview-panel {
+        position: sticky;
+        top: 20px;
+    }
+
+    .paper-wrap {
+        background: #e3e7ed;
+        padding: 18px;
+        border-radius: 10px;
+        overflow: auto;
+    }
+
+    #receipt {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: white;
+        box-shadow: 0 3px 12px #0002;
+    }
+
+    .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0 0;
+        font-size: 13px;
+    }
+
+    .check input {
+        width: auto;
+    }
+
+    #metrics {
+        font-family: monospace;
+    }
+
+    @media (max-width: 760px) {
+        main {
+            grid-template-columns: 1fr;
+        }
+
+        .preview-panel {
+            position: static;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .grid, .buttons {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+
+<body>
+<main>
+    <section class="panel">
+        <h1>Impressora KP-1025</h1>
+
+        <p class="intro">
+            Gerador de cópia auxiliar em imagem.
+            Os dados são manuais e não confirmam pagamento.
+        </p>
+
+        <form id="editor">
+            <div class="grid">
+                <div>
+                    <label for="brand">Título / sistema</label>
+                    <input id="brand" value="PAGAMENTO" maxlength="24">
+                </div>
+
+                <div>
+                    <label for="authorization">Autorização informada</label>
+                    <input id="authorization" value="000000" maxlength="20">
+                </div>
+
+                <div class="full">
+                    <label for="via">Identificação da via</label>
+                    <input
+                        id="via"
+                        value="VIA ESTABELECIMENTO"
+                        maxlength="32"
+                    >
+                </div>
+
+                <div class="full">
+                    <label for="banner">Faixa de identificação</label>
+                    <input
+                        id="banner"
+                        value="CÓPIA AUXILIAR"
+                        maxlength="40"
+                    >
+                </div>
+
+                <div>
+                    <label for="datetime">Data e hora</label>
+                    <input
+                        id="datetime"
+                        value="12/NOV/2026 09:54"
+                        maxlength="24"
+                    >
+                </div>
+
+                <div>
+                    <label for="last4">Últimos 4 dígitos do cartão</label>
+                    <input
+                        id="last4"
+                        value="0000"
+                        inputmode="numeric"
+                        maxlength="4"
+                        pattern="[0-9]{4}"
+                    >
+                </div>
+
+                <div>
+                    <label for="amount">Valor em reais</label>
+                    <input
+                        id="amount"
+                        value="22,90"
+                        inputmode="decimal"
+                        maxlength="16"
+                    >
+                </div>
+
+                <div>
+                    <label for="type">Tipo de transação informado</label>
+                    <input
+                        id="type"
+                        value="VENDA DÉBITO"
+                        maxlength="36"
+                    >
+                </div>
+
+                <div class="full">
+                    <label for="store">Estabelecimento</label>
+                    <input
+                        id="store"
+                        value="ESTABELECIMENTO DEMONSTRAÇÃO"
+                        maxlength="60"
+                    >
+                </div>
+
+                <div class="full">
+                    <label for="cnpj">CNPJ informado</label>
+                    <input
+                        id="cnpj"
+                        value="00.000.000/0000-00"
+                        maxlength="24"
+                    >
+                </div>
+
+                <div>
+                    <label for="cv">CV</label>
+                    <input id="cv" value="000000" maxlength="24">
+                </div>
+
+                <div>
+                    <label for="nsu">NSU</label>
+                    <input id="nsu" value="00000000000" maxlength="24">
+                </div>
+
+                <div>
+                    <label for="label">Label</label>
+                    <input id="label" value="DÉBITO" maxlength="24">
+                </div>
+
+                <div>
+                    <label for="aid">AID informado</label>
+                    <input id="aid" value="" maxlength="40">
+                </div>
+
+                <div class="full">
+                    <label for="arqc">ARQC informado</label>
+                    <input id="arqc" value="" maxlength="40">
+                </div>
+            </div>
+
+            <details>
+                <summary>Calibração da impressão</summary>
+
+                <div class="grid">
+                    <div>
+                        <label for="width">Largura em pontos</label>
+                        <select id="width">
+                            <option value="384">384 — teste inicial</option>
+                            <option value="360">360</option>
+                            <option value="432">432</option>
+                            <option value="576">576</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="margin">Margem lateral em pontos</label>
+                        <input
+                            id="margin"
+                            type="number"
+                            value="8"
+                            min="0"
+                            max="40"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="fontSize">Fonte base em pontos</label>
+                        <input
+                            id="fontSize"
+                            type="number"
+                            value="14"
+                            min="10"
+                            max="24"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="threshold">Limiar preto/branco</label>
+                        <input
+                            id="threshold"
+                            type="number"
+                            value="160"
+                            min="1"
+                            max="254"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="bandHeight">Altura da faixa raster</label>
+                        <select id="bandHeight">
+                            <option value="24">24 pontos</option>
+                            <option value="48" selected>48 pontos</option>
+                            <option value="64">64 pontos</option>
+                            <option value="128">128 pontos</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="chunkSize">Bytes por envio</label>
+                        <select id="chunkSize">
+                            <option value="20" selected>20 — conservador</option>
+                            <option value="64">64 — testar</option>
+                            <option value="128">128 — testar</option>
+                            <option value="180">180 — testar</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="delay">Pausa entre envios em ms</label>
+                        <input
+                            id="delay"
+                            type="number"
+                            value="20"
+                            min="0"
+                            max="500"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="feed">Avanço final em linhas</label>
+                        <input
+                            id="feed"
+                            type="number"
+                            value="3"
+                            min="0"
+                            max="10"
+                        >
+                    </div>
+                </div>
+
+                <label class="check">
+                    <input id="binaryPreview" type="checkbox" checked>
+                    Mostrar prévia convertida para preto/branco
+                </label>
+
+                <p class="hint">
+                    Esses parâmetros não são especificações confirmadas
+                    da KP-1025. Comece com o teste de calibração.
+                    Se houver cortes laterais, confirme a largura suportada.
+                </p>
+            </details>
+
+            <details>
+                <summary>Perfil Bluetooth</summary>
+
+                <div class="grid">
+                    <div class="full">
+                        <label for="serviceUuid">
+                            UUID do serviço — opcional
+                        </label>
+                        <input
+                            id="serviceUuid"
+                            placeholder="Ex.: 000018f0-0000-1000-8000-00805f9b34fb"
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="full">
+                        <label for="characteristicUuid">
+                            UUID da característica — opcional
+                        </label>
+                        <input
+                            id="characteristicUuid"
+                            placeholder="UUID da característica de escrita"
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+
+                <p class="hint">
+                    Se houver mais de uma característica gravável, o projeto
+                    pedirá a seleção. Quando identificar a correta, informe
+                    seus UUIDs aqui para conexões futuras.
+                </p>
+
+                <div id="channelBox" hidden>
+                    <label for="channel">Selecione o canal de escrita</label>
+                    <select id="channel"></select>
+
+                    <button id="useChannel" type="button">
+                        Usar canal selecionado
+                    </button>
+                </div>
+            </details>
+        </form>
+
+        <div class="buttons">
+            <button id="connect" type="button" class="primary">
+                Conectar impressora
+            </button>
+
+            <button id="disconnect" type="button" disabled>
+                Desconectar
+            </button>
+
+            <button id="test" type="button" disabled>
+                Imprimir calibração
+            </button>
+
+            <button id="print" type="button" class="print" disabled>
+                Imprimir cópia auxiliar
+            </button>
+
+            <button id="download" type="button">
+                Salvar prévia PNG
+            </button>
+
+            <button id="clearSaved" type="button">
+                Limpar configurações salvas
+            </button>
+        </div>
+
+        <div id="status" role="status" aria-live="polite">
+            Não conectado.
+        </div>
+    </section>
+
+    <aside class="panel preview-panel">
+        <h2>Prévia da impressão</h2>
+
+        <div class="paper-wrap">
+            <canvas
+                id="receipt"
+                aria-label="Prévia da cópia auxiliar"
+            ></canvas>
+        </div>
+
+        <p class="hint" id="metrics"></p>
+
+        <p class="hint">
+            A prévia usa o mesmo desenho enviado à impressora.
+            O resultado físico ainda depende do equipamento,
+            do papel e da calibração.
+        </p>
+    </aside>
+</main>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+const STORAGE_KEY = "kp1025-settings-v1";
+
+const DEFAULT_SERVICES = [
+    "000018f0-0000-1000-8000-00805f9b34fb",
+    "49535343-fe7d-4ae5-8fa9-9fafd205e455",
+    "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
+    "0000ff00-0000-1000-8000-00805f9b34fb",
+    "0000fee7-0000-1000-8000-00805f9b34fb",
+    "0000ae30-0000-1000-8000-00805f9b34fb"
+];
+
+const SETTING_IDS = [
+    "width",
+    "margin",
+    "fontSize",
+    "threshold",
+    "bandHeight",
+    "chunkSize",
+    "delay",
+    "feed",
+    "binaryPreview",
+    "serviceUuid",
+    "characteristicUuid"
+];
+
+let device = null;
+let characteristic = null;
+let candidates = [];
+let busy = false;
+let connecting = false;
+let rawCanvas = null;
+
+function setStatus(message, kind = "") {
+    $("status").textContent = message;
+    $("status").dataset.kind = kind;
 }
 
-async function printBluetooth() {
-    if (!navigator.bluetooth) {
-        alert("O seu navegador não suporta Web Bluetooth.");
+function numberValue(id, min, max) {
+    const value = Number($(id).value);
+    return Math.max(min, Math.min(max, Number.isFinite(value) ? value : min));
+}
+
+function config() {
+    return {
+        width: numberValue("width", 128, 832),
+        margin: numberValue("margin", 0, 40),
+        fontSize: numberValue("fontSize", 10, 24),
+        threshold: numberValue("threshold", 1, 254),
+        bandHeight: numberValue("bandHeight", 1, 255),
+        chunkSize: numberValue("chunkSize", 1, 180),
+        delay: numberValue("delay", 0, 500),
+        feed: numberValue("feed", 0, 10)
+    };
+}
+
+function readData() {
+    const last4 = $("last4").value.replace(/\D/g, "").slice(-4);
+
+    return {
+        brand: $("brand").value.trim() || "PAGAMENTO",
+        via: $("via").value.trim(),
+        authorization: $("authorization").value.trim(),
+        banner: $("banner").value.trim() || "CÓPIA AUXILIAR",
+        datetime: $("datetime").value.trim(),
+        card: "************" + (last4 || "----"),
+        amount: $("amount").value.trim(),
+        type: $("type").value.trim(),
+        store: $("store").value.trim(),
+        cnpj: $("cnpj").value.trim(),
+        cv: $("cv").value.trim(),
+        nsu: $("nsu").value.trim(),
+        label: $("label").value.trim(),
+        aid: $("aid").value.trim(),
+        arqc: $("arqc").value.trim()
+    };
+}
+
+function money(value) {
+    const normalized = value
+        .replace(/R\$/gi, "")
+        .replace(/\s/g, "");
+
+    if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(normalized)) {
+        throw new Error("Informe o valor no formato brasileiro: 22,90.");
+    }
+
+    const numeric = Number(
+        normalized.replace(/\./g, "").replace(",", ".")
+    );
+
+    if (!Number.isFinite(numeric) || numeric < 0) {
+        throw new Error("Valor inválido.");
+    }
+
+    return numeric.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function font(ctx, size, bold = false) {
+    ctx.font = `${bold ? "bold " : ""}${size}px monospace`;
+}
+
+function fittedText(
+    ctx,
+    text,
+    x,
+    y,
+    maxWidth,
+    size,
+    { bold = false, align = "left" } = {}
+) {
+    text = String(text || "");
+    let actual = size;
+
+    font(ctx, actual, bold);
+
+    while (ctx.measureText(text).width > maxWidth && actual > 8) {
+        actual -= 0.5;
+        font(ctx, actual, bold);
+    }
+
+    while (ctx.measureText(text).width > maxWidth && text.length) {
+        text = text.slice(0, -1);
+    }
+
+    ctx.textAlign = align;
+    ctx.fillText(text, x, y);
+    ctx.textAlign = "left";
+}
+
+function wrappedText(ctx, text, x, y, maxWidth, size, bold = false) {
+    font(ctx, size, bold);
+    ctx.textAlign = "left";
+
+    let line = "";
+    const lineHeight = Math.ceil(size * 1.25);
+
+    for (const char of String(text || "")) {
+        if (line && ctx.measureText(line + char).width > maxWidth) {
+            ctx.fillText(line, x, y);
+            y += lineHeight;
+            line = "";
+        }
+
+        line += char;
+    }
+
+    ctx.fillText(line, x, y);
+    return y + lineHeight;
+}
+
+function renderReceipt() {
+    const c = config();
+    const d = readData();
+
+    const canvas = document.createElement("canvas");
+    canvas.width = c.width;
+    canvas.height = 1400;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.textBaseline = "top";
+
+    const m = c.margin;
+    const usable = c.width - 2 * m;
+    const base = c.fontSize;
+    const small = Math.max(10, base - 2);
+    const line = Math.ceil(base * 1.2);
+
+    let y = 10;
+
+    fittedText(
+        ctx, d.brand, m, y + 2,
+        usable * 0.46, base + 7,
+        { bold: true }
+    );
+
+    fittedText(
+        ctx, d.via, c.width - m, y,
+        usable * 0.51, small,
+        { align: "right" }
+    );
+
+    fittedText(
+        ctx, `AUT: ${d.authorization || "-"}`,
+        c.width - m, y + small + 3,
+        usable * 0.51, small,
+        { align: "right" }
+    );
+
+    y += Math.max(base + 14, small * 2 + 9);
+
+    const bannerHeight = base + 10;
+
+    ctx.fillRect(m, y, usable, bannerHeight);
+    ctx.fillStyle = "#fff";
+
+    fittedText(
+        ctx, d.banner, c.width / 2, y + 4,
+        usable - 8, base,
+        { bold: true, align: "center" }
+    );
+
+    ctx.fillStyle = "#000";
+    y += bannerHeight + 7;
+
+    const leftWidth = usable * 0.55;
+    const rightWidth = usable * 0.43;
+
+    fittedText(
+        ctx, d.datetime, m, y,
+        leftWidth, small
+    );
+
+    fittedText(
+        ctx, d.card, m, y + small + 4,
+        leftWidth, small
+    );
+
+    let amount;
+
+    try {
+        amount = money(d.amount);
+    } catch {
+        amount = d.amount || "0,00";
+    }
+
+    fittedText(
+        ctx, `R$ ${amount}`,
+        c.width - m, y + 1,
+        rightWidth, base + 13,
+        { align: "right" }
+    );
+
+    y += Math.max(small * 2 + 12, base + 20);
+
+    fittedText(
+        ctx, d.type, c.width / 2, y,
+        usable, base + 1,
+        { bold: true, align: "center" }
+    );
+
+    y += base + 23;
+
+    y = wrappedText(
+        ctx, d.store, m, y,
+        usable, base, true
+    );
+
+    y = wrappedText(
+        ctx, `CNPJ: ${d.cnpj || "-"}`,
+        m, y, usable, small
+    );
+
+    y += 3;
+
+    const gap = 10;
+    const columnWidth = (usable - gap) / 2;
+    const rightX = m + columnWidth + gap;
+
+    let leftY = y;
+    let rightY = y;
+
+    const leftFields = [
+        ["CV", d.cv],
+        ["LABEL", d.label],
+        ["AID", d.aid]
+    ];
+
+    const rightFields = [
+        ["NSU", d.nsu],
+        ["ARQC", d.arqc]
+    ];
+
+    for (const [label, value] of leftFields) {
+        if (!value) continue;
+
+        leftY = wrappedText(
+            ctx, `${label}: ${value}`,
+            m, leftY, columnWidth, small
+        );
+    }
+
+    for (const [label, value] of rightFields) {
+        if (!value) continue;
+
+        rightY = wrappedText(
+            ctx, `${label}: ${value}`,
+            rightX, rightY, columnWidth, small
+        );
+    }
+
+    y = Math.max(leftY, rightY) + 15;
+
+    ctx.fillRect(m, y, usable, 1);
+    y += 7;
+
+    fittedText(
+        ctx, "CÓPIA AUXILIAR",
+        c.width / 2, y, usable, small,
+        { bold: true, align: "center" }
+    );
+
+    y += line;
+
+    fittedText(
+        ctx, "NÃO VALIDA PAGAMENTO",
+        c.width / 2, y, usable, small,
+        { bold: true, align: "center" }
+    );
+
+    y += line;
+
+    fittedText(
+        ctx, "DADOS INFORMADOS MANUALMENTE",
+        c.width / 2, y, usable, Math.max(9, small - 1),
+        { align: "center" }
+    );
+
+    y += line + 10;
+
+    const cropped = document.createElement("canvas");
+    cropped.width = c.width;
+    cropped.height = Math.ceil(y);
+
+    cropped.getContext("2d").drawImage(
+        canvas,
+        0, 0, cropped.width, cropped.height,
+        0, 0, cropped.width, cropped.height
+    );
+
+    return cropped;
+}
+
+function toMonochrome(source, threshold) {
+    const canvas = document.createElement("canvas");
+    canvas.width = source.width;
+    canvas.height = source.height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(source, 0, 0);
+
+    const image = ctx.getImageData(
+        0, 0, canvas.width, canvas.height
+    );
+
+    const pixels = image.data;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+        const alpha = pixels[i + 3] / 255;
+
+        const luminance =
+            pixels[i] * 0.299 +
+            pixels[i + 1] * 0.587 +
+            pixels[i + 2] * 0.114;
+
+        const onWhite = luminance * alpha + 255 * (1 - alpha);
+        const value = onWhite < threshold ? 0 : 255;
+
+        pixels[i] = value;
+        pixels[i + 1] = value;
+        pixels[i + 2] = value;
+        pixels[i + 3] = 255;
+    }
+
+    ctx.putImageData(image, 0, 0);
+    return canvas;
+}
+
+function updatePreview() {
+    rawCanvas = renderReceipt();
+
+    const source = $("binaryPreview").checked
+        ? toMonochrome(rawCanvas, config().threshold)
+        : rawCanvas;
+
+    const preview = $("receipt");
+    preview.width = source.width;
+    preview.height = source.height;
+
+    preview.getContext("2d").drawImage(source, 0, 0);
+
+    $("metrics").textContent =
+        `${source.width} × ${source.height} pontos. ` +
+        "Avanço final de papel não representado na prévia.";
+}
+
+function makeCalibration() {
+    const c = config();
+    const canvas = document.createElement("canvas");
+
+    canvas.width = c.width;
+    canvas.height = 240;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#000";
+    ctx.textBaseline = "top";
+
+    ctx.fillRect(0, 0, canvas.width, 2);
+    ctx.fillRect(0, 0, 2, canvas.height);
+    ctx.fillRect(canvas.width - 2, 0, 2, canvas.height);
+    ctx.fillRect(0, canvas.height - 2, canvas.width, 2);
+
+    fittedText(
+        ctx, "TESTE DE CALIBRAÇÃO",
+        canvas.width / 2, 15,
+        canvas.width - 16, 17,
+        { bold: true, align: "center" }
+    );
+
+    fittedText(
+        ctx, `Largura: ${canvas.width} pontos`,
+        10, 47, canvas.width - 20, 14
+    );
+
+    fittedText(
+        ctx, "Á É Í Ó Ú Ã Õ Ç 0123456789",
+        10, 75, canvas.width - 20, 14
+    );
+
+    font(ctx, 12);
+
+    for (let x = 0; x < canvas.width; x += 32) {
+        ctx.fillRect(x, 110, 1, 22);
+        ctx.fillText(String(x), x + 2, 137);
+    }
+
+    for (let i = 0; i < 8; i++) {
+        ctx.fillRect(12 + i * 8, 175, 1, 35);
+        ctx.fillRect(100 + i * 8, 175, 2, 35);
+    }
+
+    ctx.fillRect(canvas.width - 90, 175, 70, 35);
+
+    return canvas;
+}
+
+function rasterBytes(source) {
+    const c = config();
+    const mono = toMonochrome(source, c.threshold);
+    const ctx = mono.getContext("2d");
+
+    const pixels = ctx.getImageData(
+        0, 0, mono.width, mono.height
+    ).data;
+
+    const widthBytes = Math.ceil(mono.width / 8);
+
+    const bandCount = Math.ceil(mono.height / c.bandHeight);
+    const totalSize =
+        5 +
+        bandCount * 8 +
+        widthBytes * mono.height +
+        3;
+
+    const output = new Uint8Array(totalSize);
+    let offset = 0;
+
+    function add(values) {
+        output.set(values, offset);
+        offset += values.length;
+    }
+
+    add([0x1B, 0x40, 0x1B, 0x61, 0x00]);
+
+    for (let top = 0; top < mono.height; top += c.bandHeight) {
+        const rows = Math.min(c.bandHeight, mono.height - top);
+
+        add([
+            0x1D, 0x76, 0x30, 0x00,
+            widthBytes & 0xFF,
+            (widthBytes >> 8) & 0xFF,
+            rows & 0xFF,
+            (rows >> 8) & 0xFF
+        ]);
+
+        for (let y = 0; y < rows; y++) {
+            for (let byteX = 0; byteX < widthBytes; byteX++) {
+                let packed = 0;
+
+                for (let bit = 0; bit < 8; bit++) {
+                    const x = byteX * 8 + bit;
+
+                    if (x >= mono.width) continue;
+
+                    const index = ((top + y) * mono.width + x) * 4;
+
+                    if (pixels[index] === 0) {
+                        packed |= 0x80 >> bit;
+                    }
+                }
+
+                output[offset++] = packed;
+            }
+        }
+    }
+
+    add([0x1B, 0x64, c.feed]);
+
+    return output.subarray(0, offset);
+}
+
+function updateButtons() {
+    const connected = Boolean(
+        device && device.gatt.connected && characteristic
+    );
+
+    $("connect").disabled =
+        busy || connecting || Boolean(device && device.gatt.connected);
+
+    $("disconnect").disabled =
+        busy || connecting || !Boolean(device && device.gatt.connected);
+
+    $("print").disabled = busy || connecting || !connected;
+    $("test").disabled = busy || connecting || !connected;
+    $("useChannel").disabled = busy || connecting;
+    $("channel").disabled = busy || connecting;
+
+    for (const id of SETTING_IDS) {
+        $(id).disabled = busy || connecting;
+    }
+}
+
+function normalizeUuid(value) {
+    value = value.trim().toLowerCase();
+
+    if (!value) return "";
+
+    if (/^[0-9a-f]{4}$/.test(value)) {
+        return `0000${value}-0000-1000-8000-00805f9b34fb`;
+    }
+
+    if (/^[0-9a-f]{8}$/.test(value)) {
+        return `${value}-0000-1000-8000-00805f9b34fb`;
+    }
+
+    if (
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+        .test(value)
+    ) {
+        return value;
+    }
+
+    throw new Error("UUID inválido. Use 4, 8 ou 32 dígitos hexadecimais com hífens.");
+}
+
+function selectCandidate(index) {
+    const selected = candidates[index];
+
+    if (!selected) {
+        throw new Error("Selecione um canal válido.");
+    }
+
+    characteristic = selected.characteristic;
+
+    $("serviceUuid").value = selected.serviceUuid;
+    $("characteristicUuid").value = characteristic.uuid;
+
+    saveSettings();
+
+    setStatus(
+        `Conectado: ${device.name || "dispositivo sem nome"}\n` +
+        `Serviço: ${selected.serviceUuid}\n` +
+        `Canal: ${characteristic.uuid}\n` +
+        "Faça primeiro o teste de calibração.",
+        "success"
+    );
+
+    updateButtons();
+}
+
+function onDisconnected(event) {
+    if (event.target !== device) return;
+
+    characteristic = null;
+    candidates = [];
+    $("channelBox").hidden = true;
+
+    setStatus("Impressora desconectada.");
+    updateButtons();
+}
+
+async function connectPrinter() {
+    if (!window.isSecureContext) {
+        setStatus(
+            "Abra a página por HTTPS para usar Web Bluetooth.",
+            "error"
+        );
         return;
     }
 
-    const printerServices = [
-        '000018f0-0000-1000-8000-00805f9b34fb',
-        '49535343-fe7d-4ae5-8fa9-9fafd205e455',
-        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-        '0000ff00-0000-1000-8000-00805f9b34fb',
-        '0000fee7-0000-1000-8000-00805f9b34fb',
-        '0000ae30-0000-1000-8000-00805f9b34fb'
-    ];
+    if (!navigator.bluetooth) {
+        setStatus(
+            "Web Bluetooth não está disponível neste navegador. " +
+            "Use um navegador e sistema compatíveis com Bluetooth BLE.",
+            "error"
+        );
+        return;
+    }
+
+    connecting = true;
+    updateButtons();
 
     try {
-        const device = await navigator.bluetooth.requestDevice({
+        const customService = normalizeUuid($("serviceUuid").value);
+        const targetCharacteristic =
+            normalizeUuid($("characteristicUuid").value);
+
+        const optionalServices = [
+            ...new Set([
+                ...DEFAULT_SERVICES,
+                ...(customService ? [customService] : [])
+            ])
+        ];
+
+        setStatus("Selecione a impressora na janela do navegador.");
+
+        device = await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
-            optionalServices: printerServices
+            optionalServices
         });
 
-        const server = await device.gatt.connect();
-        const services = await server.getPrimaryServices();
+        device.addEventListener(
+            "gattserverdisconnected",
+            onDisconnected
+        );
 
-        let writeCharacteristic = null;
+        setStatus("Conectando e procurando canais de escrita...");
+
+        const server = await device.gatt.connect();
+
+        const services = customService
+            ? [await server.getPrimaryService(customService)]
+            : await server.getPrimaryServices();
+
+        candidates = [];
+        characteristic = null;
+
         for (const service of services) {
-            const characteristics = await service.getCharacteristics();
-            for (const char of characteristics) {
-                if (char.properties.write || char.properties.writeWithoutResponse) {
-                    writeCharacteristic = char;
-                    break;
-                }
+            let characteristics;
+
+            try {
+                characteristics = await service.getCharacteristics();
+            } catch {
+                continue;
             }
-            if (writeCharacteristic) break;
+
+            for (const char of characteristics) {
+                const writable =
+                    char.properties.write ||
+                    char.properties.writeWithoutResponse;
+
+                if (!writable) continue;
+
+                if (
+                    targetCharacteristic &&
+                    char.uuid.toLowerCase() !== targetCharacteristic
+                ) {
+                    continue;
+                }
+
+                candidates.push({
+                    serviceUuid: service.uuid,
+                    characteristic: char
+                });
+            }
         }
 
-        if (!writeCharacteristic) {
-            alert("Impressora ligada, mas o canal de escrita não foi encontrado.");
+        if (!candidates.length) {
+            throw new Error(
+                "Nenhum canal gravável encontrado no perfil autorizado. " +
+                "Confira os UUIDs e se a impressora oferece Bluetooth BLE."
+            );
+        }
+
+        if (candidates.length === 1) {
+            $("channelBox").hidden = true;
+            selectCandidate(0);
+        } else {
+            const select = $("channel");
+            select.replaceChildren();
+
+            candidates.forEach((candidate, index) => {
+                const option = document.createElement("option");
+                option.value = String(index);
+                option.textContent =
+                    `${index + 1}: ${candidate.characteristic.uuid}`;
+
+                select.appendChild(option);
+            });
+
+            $("channelBox").hidden = false;
+
+            setStatus(
+                "Mais de um canal gravável encontrado. " +
+                "Selecione o canal correto no perfil Bluetooth."
+            );
+        }
+    } catch (error) {
+        if (device && device.gatt.connected && !characteristic) {
+            device.gatt.disconnect();
+        }
+
+        setStatus(
+            `Falha na conexão: ${error.message || error}`,
+            "error"
+        );
+    } finally {
+        connecting = false;
+        updateButtons();
+    }
+}
+
+async function sendCanvas(canvas, title) {
+    if (busy) return;
+
+    if (!device || !device.gatt.connected || !characteristic) {
+        setStatus("Conecte a impressora antes de imprimir.", "error");
+        return;
+    }
+
+    busy = true;
+    updateButtons();
+
+    try {
+        const c = config();
+        const bytes = rasterBytes(canvas);
+        const target = characteristic;
+
+        let lastProgress = -1;
+
+        for (let offset = 0; offset < bytes.length; offset += c.chunkSize) {
+            if (!device.gatt.connected) {
+                throw new Error("A conexão foi interrompida durante o envio.");
+            }
+
+            const chunk = bytes.subarray(
+                offset,
+                Math.min(offset + c.chunkSize, bytes.length)
+            );
+
+            if (target.properties.write) {
+                await target.writeValueWithResponse(chunk);
+            } else {
+                await target.writeValueWithoutResponse(chunk);
+            }
+
+            const progress = Math.floor(
+                Math.min(offset + chunk.length, bytes.length) /
+                bytes.length * 100
+            );
+
+            if (progress !== lastProgress) {
+                setStatus(`${title}: enviando ${progress}%...`);
+                lastProgress = progress;
+            }
+
+            if (c.delay > 0) {
+                await sleep(c.delay);
+            }
+        }
+
+        setStatus(
+            `${title}: dados enviados.\n` +
+            "Confira o papel. O envio não confirma a impressão física.",
+            "success"
+        );
+    } catch (error) {
+        setStatus(
+            `Falha no envio: ${error.message || error}\n` +
+            "O trabalho pode ter sido enviado parcialmente. " +
+            "Confira a impressora antes de tentar novamente.",
+            "error"
+        );
+    } finally {
+        busy = false;
+        updateButtons();
+    }
+}
+
+function saveSettings() {
+    try {
+        const settings = {};
+
+        for (const id of SETTING_IDS) {
+            const element = $(id);
+
+            settings[id] = element.type === "checkbox"
+                ? element.checked
+                : element.value;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch {
+        // O projeto continua funcionando sem armazenamento local.
+    }
+}
+
+function loadSettings() {
+    try {
+        const settings = JSON.parse(
+            localStorage.getItem(STORAGE_KEY) || "{}"
+        );
+
+        for (const id of SETTING_IDS) {
+            if (!(id in settings)) continue;
+
+            const element = $(id);
+
+            if (element.type === "checkbox") {
+                element.checked = Boolean(settings[id]);
+            } else if (element.tagName === "SELECT") {
+                const value = String(settings[id]);
+
+                if ([...element.options].some(option => option.value === value)) {
+                    element.value = value;
+                }
+            } else {
+                element.value = settings[id];
+            }
+        }
+    } catch {
+        // Ignora configurações ausentes ou inválidas.
+    }
+}
+
+$("editor").addEventListener("submit", event => {
+    event.preventDefault();
+});
+
+$("editor").addEventListener("input", () => {
+    updatePreview();
+    saveSettings();
+});
+
+$("editor").addEventListener("change", () => {
+    updatePreview();
+    saveSettings();
+});
+
+$("connect").addEventListener("click", connectPrinter);
+
+$("disconnect").addEventListener("click", () => {
+    if (device && device.gatt.connected) {
+        device.gatt.disconnect();
+    }
+});
+
+$("useChannel").addEventListener("click", () => {
+    try {
+        selectCandidate(Number($("channel").value));
+    } catch (error) {
+        setStatus(error.message, "error");
+    }
+});
+
+$("test").addEventListener("click", () => {
+    sendCanvas(makeCalibration(), "Calibração");
+});
+
+$("print").addEventListener("click", () => {
+    try {
+        money($("amount").value);
+
+        if (!/^\d{4}$/.test($("last4").value.trim())) {
+            throw new Error("Informe exatamente os últimos 4 dígitos do cartão.");
+        }
+
+        updatePreview();
+        sendCanvas(rawCanvas, "Cópia auxiliar");
+    } catch (error) {
+        setStatus(error.message, "error");
+    }
+});
+
+$("download").addEventListener("click", () => {
+    updatePreview();
+
+    $("receipt").toBlob(blob => {
+        if (!blob) {
+            setStatus("Não foi possível gerar a imagem.", "error");
             return;
         }
 
-        const encoder = new TextEncoder();
-        const data = encoder.encode(buildEscPosText());
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
 
-        const chunkSize = 20;
-        for (let i = 0; i < data.length; i += chunkSize) {
-            const chunk = data.slice(i, i + chunkSize);
-            if (writeCharacteristic.properties.writeWithoutResponse) {
-                await writeCharacteristic.writeValueWithoutResponse(chunk);
-            } else {
-                await writeCharacteristic.writeValue(chunk);
-            }
-        }
+        link.href = url;
+        link.download = "copia-auxiliar.png";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
 
-        alert("Comprovativo impresso com sucesso!");
-    } catch (error) {
-        console.error(error);
-        alert("Erro: " + error.message + "\n\nVerifique se o Bluetooth e a Localização (GPS) estão ligados.");
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }, "image/png");
+});
+
+$("clearSaved").addEventListener("click", () => {
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+        setStatus(
+            "Configurações salvas removidas. " +
+            "Os valores atuais continuam na tela até recarregar a página."
+        );
+    } catch {
+        setStatus("Não foi possível acessar o armazenamento local.", "error");
     }
-}
-</script>
+});
 
+loadSettings();
+updatePreview();
+updateButtons();
+</script>
 </body>
 </html>
