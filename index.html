@@ -33,7 +33,7 @@
         label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
         input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         
-        /* RECIBO TÉRMICO ESTILO PAGBANK 58mm */
+        /* RECIBO TÉRMICO IDÊNTICO À MAQUININHA */
         .receipt {
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
@@ -54,8 +54,9 @@
             padding-bottom: 6px;
             margin-bottom: 6px;
         }
-        .receipt-logo { font-weight: bold; font-size: 14px; }
+        .receipt-logo { font-weight: bold; font-size: 13px; }
         .receipt-right-info { text-align: right; font-size: 9px; }
+        .receipt-reprint { text-align: center; font-size: 10px; font-weight: bold; margin: 4px 0; border-bottom: 1px dashed #000; padding-bottom: 4px; }
         .receipt-amount-row {
             display: flex;
             justify-content: space-between;
@@ -66,17 +67,11 @@
         }
         .receipt-datetime { font-size: 10px; }
         .receipt-value { font-size: 16px; font-weight: bold; text-align: right; }
-        .receipt-center { text-align: center; font-weight: bold; font-size: 12px; margin: 8px 0; }
+        .receipt-center { text-align: center; font-weight: bold; font-size: 11px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
         .receipt-footer-grid {
-            display: flex;
-            justify-content: space-between;
             font-size: 9px;
-            border-top: 1px dashed #000;
-            padding-top: 6px;
-            margin-top: 6px;
+            line-height: 1.3;
         }
-        .col-left { width: 55%; }
-        .col-right { width: 45%; text-align: right; word-break: break-all; }
 
         .btn {
             background-color: #28a745;
@@ -92,21 +87,6 @@
             transition: background 0.2s;
         }
         .btn:hover { background-color: #218838; }
-        .btn-system { background-color: #17a2b8; margin-top: 8px; }
-        .btn-system:hover { background-color: #138496; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #receipt-preview, #receipt-preview * { visibility: visible; }
-            #receipt-preview {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 58mm;
-                border: none;
-                padding: 0;
-            }
-        }
     </style>
 </head>
 <body>
@@ -119,25 +99,29 @@
             <input type="text" id="inp-brand" value="PagBank" oninput="updateReceipt()">
         </div>
         <div class="form-group">
-            <label>Via / Tipo</label>
+            <label>Via / AUT</label>
             <textarea id="inp-via" rows="2" oninput="updateReceipt()">VIA ESTABELECIMENTO
-AUT:092204</textarea>
+AUT: 314271</textarea>
+        </div>
+        <div class="form-group">
+            <label>Status (ex: REIMPRESSÃO ou vazio)</label>
+            <input type="text" id="inp-status" value="REIMPRESSÃO" oninput="updateReceipt()">
         </div>
         <div class="form-group">
             <label>Data e Hora</label>
-            <input type="text" id="inp-datetime" value="06/NOV/2026 22:46" oninput="updateReceipt()">
+            <input type="text" id="inp-datetime" value="11/NOV/2026 11:32" oninput="updateReceipt()">
         </div>
         <div class="form-group">
             <label>Cartão (Final)</label>
-            <input type="text" id="inp-card" value="************0183" oninput="updateReceipt()">
+            <input type="text" id="inp-card" value="************1793" oninput="updateReceipt()">
         </div>
         <div class="form-group">
             <label>Valor (R$)</label>
-            <input type="text" id="inp-value" value="51,45" oninput="updateReceipt()">
+            <input type="text" id="inp-value" value="22,90" oninput="updateReceipt()">
         </div>
         <div class="form-group">
             <label>Tipo de Transação</label>
-            <input type="text" id="inp-type" value="VENDA DEBITO MASTERCARD" oninput="updateReceipt()">
+            <input type="text" id="inp-type" value="VENDA DEBITO ELO" oninput="updateReceipt()">
         </div>
         <div class="form-group">
             <label>Nome do Estabelecimento</label>
@@ -148,13 +132,15 @@ AUT:092204</textarea>
             <input type="text" id="inp-cnpj" value="52.346.711/0001-16" oninput="updateReceipt()">
         </div>
         <div class="form-group">
-            <label>CV / NSU / Outros</label>
-            <textarea id="inp-nsu" rows="2" oninput="updateReceipt()">NSU: 110665928300
-CV: 7659358d</textarea>
+            <label>NSU / CV / Outros códigos</label>
+            <textarea id="inp-nsu" rows="4" oninput="updateReceipt()">NSU: 41132712554
+CV: 712954
+LABEL: DEBITO
+AID: A00000004942010
+ARQC: C03308DEFEE1805E</textarea>
         </div>
 
-        <button class="btn" onclick="printBluetooth()">🖨️ 1. Imprimir via Web Bluetooth</button>
-        <button class="btn btn-system" onclick="window.print()">📄 2. Imprimir via Sistema / PDF</button>
+        <button class="btn" onclick="printBluetooth()">🖨️ Imprimir via Web Bluetooth</button>
     </div>
 
     <div>
@@ -165,34 +151,28 @@ CV: 7659358d</textarea>
                     <div class="receipt-logo" id="prev-brand">PagBank</div>
                 </div>
                 <div class="receipt-right-info" id="prev-via">
-                    VIA ESTABELECIMENTO<br>AUT:092204
+                    VIA ESTABELECIMENTO<br>AUT: 314271
                 </div>
             </div>
+
+            <div class="receipt-reprint" id="prev-status">REIMPRESSÃO</div>
 
             <div class="receipt-amount-row">
                 <div>
-                    <div class="receipt-datetime" id="prev-datetime">06/NOV/2026 22:46</div>
-                    <div style="font-size: 9px;" id="prev-card">************0183</div>
+                    <div class="receipt-datetime" id="prev-datetime">11/NOV/2026 11:32</div>
+                    <div style="font-size: 9px;" id="prev-card">************1793</div>
                 </div>
-                <div class="receipt-value">R$<span id="prev-value">51,45</span></div>
+                <div class="receipt-value">R$<span id="prev-value">22,90</span></div>
             </div>
 
             <div class="receipt-center" id="prev-type">
-                VENDA DEBITO MASTERCARD
+                VENDA DEBITO ELO
             </div>
 
             <div class="receipt-footer-grid">
-                <div class="col-left">
-                    <strong id="prev-store">STEAKTOPIA</strong><br>
-                    CNPJ:<span id="prev-cnpj">52.346.711/0001-16</span><br>
-                    <span id="prev-nsu">NSU: 110665928300<br>CV: 7659358d</span><br>
-                    LABEL: DEBIT MASTERCARD<br>
-                    AID: A0000000041010D07812
-                </div>
-                <div class="col-right">
-                    SNPOS: 5911042640055701<br>
-                    ARQC: C894FAE52C83340
-                </div>
+                <strong id="prev-store">STEAKTOPIA</strong><br>
+                CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span><br>
+                <span id="prev-nsu">NSU: 41132712554<br>CV: 712954<br>LABEL: DEBITO<br>AID: A00000004942010<br>ARQC: C03308DEFEE1805E</span>
             </div>
         </div>
     </div>
@@ -202,6 +182,7 @@ CV: 7659358d</textarea>
 function updateReceipt() {
     document.getElementById('prev-brand').innerText = document.getElementById('inp-brand').value;
     document.getElementById('prev-via').innerHTML = document.getElementById('inp-via').value.replace(/\n/g, '<br>');
+    document.getElementById('prev-status').innerText = document.getElementById('inp-status').value;
     document.getElementById('prev-datetime').innerText = document.getElementById('inp-datetime').value;
     document.getElementById('prev-card').innerText = document.getElementById('inp-card').value;
     document.getElementById('prev-value').innerText = document.getElementById('inp-value').value;
@@ -214,6 +195,7 @@ function updateReceipt() {
 function buildEscPosText() {
     const brand = document.getElementById('inp-brand').value;
     const via = document.getElementById('inp-via').value.replace(/\n/g, ' | ');
+    const status = document.getElementById('inp-status').value;
     const datetime = document.getElementById('inp-datetime').value;
     const card = document.getElementById('inp-card').value;
     const value = "R$ " + document.getElementById('inp-value').value;
@@ -222,50 +204,57 @@ function buildEscPosText() {
     const cnpj = document.getElementById('inp-cnpj').value;
     const nsu = document.getElementById('inp-nsu').value;
 
-    // 32 caracteres por linha (padrão 58mm)
-    return (
+    let escText = (
         "\x1B\x40" + // Inicializa impressora
-        "\x1B\x61\x01" + // Centralizar
-        "\x1B\x45\x01" + brand + "\x1B\x45\x00\n" +
-        via + "\n" +
+        "\x1B\x61\x01" + // Centralizar cabeçalho
+        "\x1B\x45\x01" + "(o) " + brand + "\x1B\x45\x00\n" +
+        via + "\n"
+    );
+
+    if (status.trim() !== "") {
+        escText += "--------------------------------\n" + status + "\n";
+    }
+
+    escText += (
         "--------------------------------\n" +
-        "\x1B\x61\x00" + // Esquerda
+        "\x1B\x61\x00" + // Esquerda para data e cartão
         datetime + "\n" +
         card + "\n" +
-        "\x1B\x61\x02" + // Direita
+        "\x1B\x61\x02" + // Direita para valor grande
         "\x1D\x21\x11" + value + "\x1D\x21\x00\n" +
         "--------------------------------\n" +
-        "\x1B\x61\x01" + // Centralizar
+        "\x1B\x61\x01" + // Centralizado para o tipo de transação
         "\x1B\x45\x01" + type + "\x1B\x45\x00\n" +
         "--------------------------------\n" +
-        "\x1B\x61\x00" + // Esquerda
+        "\x1B\x61\x00" + // Esquerda para dados da loja e transação
         store + "\n" +
         "CNPJ: " + cnpj + "\n" +
         nsu + "\n" +
-        "LABEL: DEBIT MASTERCARD\n" +
-        "AID: A0000000041010D07812\n" +
-        "SNPOS: 5911042640055701\n" +
-        "ARQC: C894FAE52C83340\n\n\n\n"
+        "--------------------------------\n\n\n\n"
     );
+
+    return escText;
 }
 
 async function printBluetooth() {
     if (!navigator.bluetooth) {
-        alert("Seu navegador não suporta Web Bluetooth. Use o Google Chrome no Android ou PC.");
+        alert("O seu navegador não suporta Web Bluetooth.");
         return;
     }
 
-    const optionalServices = [
+    const printerServices = [
         '000018f0-0000-1000-8000-00805f9b34fb',
         '49535343-fe7d-4ae5-8fa9-9fafd205e455',
         'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-        '0000ff00-0000-1000-8000-00805f9b34fb'
+        '0000ff00-0000-1000-8000-00805f9b34fb',
+        '0000fee7-0000-1000-8000-00805f9b34fb',
+        '0000ae30-0000-1000-8000-00805f9b34fb'
     ];
 
     try {
         const device = await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
-            optionalServices: optionalServices
+            optionalServices: printerServices
         });
 
         const server = await device.gatt.connect();
@@ -284,14 +273,13 @@ async function printBluetooth() {
         }
 
         if (!writeCharacteristic) {
-            alert("Impressora conectada, mas não foi possível encontrar canal de escrita BLE. Tente usar o botão 2 (Imprimir via Sistema).");
+            alert("Impressora ligada, mas o canal de escrita não foi encontrado.");
             return;
         }
 
         const encoder = new TextEncoder();
         const data = encoder.encode(buildEscPosText());
 
-        // Envia em blocos de 20 bytes (padrão seguro BLE)
         const chunkSize = 20;
         for (let i = 0; i < data.length; i += chunkSize) {
             const chunk = data.slice(i, i + chunkSize);
@@ -302,7 +290,7 @@ async function printBluetooth() {
             }
         }
 
-        alert("Comprovante enviado com sucesso!");
+        alert("Comprovativo impresso com sucesso!");
     } catch (error) {
         console.error(error);
         alert("Erro: " + error.message + "\n\nVerifique se o Bluetooth e a Localização (GPS) estão ligados.");
