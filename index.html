@@ -33,7 +33,6 @@
         label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
         input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         
-        /* RECIBO TÉRMICO IDÊNTICO À MAQUININHA */
         .receipt {
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
@@ -104,7 +103,7 @@
 AUT: 314271</textarea>
         </div>
         <div class="form-group">
-            <label>Status (ex: REIMPRESSÃO ou vazio)</label>
+            <label>Status (ex: REIMPRESSÃO)</label>
             <input type="text" id="inp-status" value="REIMPRESSÃO" oninput="updateReceipt()">
         </div>
         <div class="form-group">
@@ -194,7 +193,7 @@ function updateReceipt() {
 
 function buildEscPosText() {
     const brand = document.getElementById('inp-brand').value;
-    const via = document.getElementById('inp-via').value.replace(/\n/g, ' | ');
+    const via = document.getElementById('inp-via').value;
     const status = document.getElementById('inp-status').value;
     const datetime = document.getElementById('inp-datetime').value;
     const card = document.getElementById('inp-card').value;
@@ -202,36 +201,46 @@ function buildEscPosText() {
     const type = document.getElementById('inp-type').value;
     const store = document.getElementById('inp-store').value;
     const cnpj = document.getElementById('inp-cnpj').value;
-    const nsu = document.getElementById('inp-nsu').value;
+    
+    // Linha divisória limpa de 32 caracteres (limite exato da bobina de 58mm)
+    const linha = "--------------------------------";
 
-    let escText = (
-        "\x1B\x40" + // Inicializa impressora
-        "\x1B\x61\x01" + // Centralizar cabeçalho
-        "\x1B\x45\x01" + "(o) " + brand + "\x1B\x45\x00\n" +
-        via + "\n"
-    );
-
+    let escText = "\x1B\x40"; // Inicializa
+    
+    // Cabeçalho: Nome centralizado
+    escText += "\x1B\x61\x01\x1B\x45\x01" + brand + "\x1B\x45\x00\n";
+    
+    // Via e AUT (alinhado à direita/esquerda simulado limpo)
+    escText += "\x1B\x61\x00" + via + "\n";
+    
     if (status.trim() !== "") {
-        escText += "--------------------------------\n" + status + "\n";
+        escText += linha + "\n";
+        escText += "\x1B\x61\x01\x1B\x45\x01" + status + "\x1B\x45\x00\n";
     }
 
-    escText += (
-        "--------------------------------\n" +
-        "\x1B\x61\x00" + // Esquerda para data e cartão
-        datetime + "\n" +
-        card + "\n" +
-        "\x1B\x61\x02" + // Direita para valor grande
-        "\x1D\x21\x11" + value + "\x1D\x21\x00\n" +
-        "--------------------------------\n" +
-        "\x1B\x61\x01" + // Centralizado para o tipo de transação
-        "\x1B\x45\x01" + type + "\x1B\x45\x00\n" +
-        "--------------------------------\n" +
-        "\x1B\x61\x00" + // Esquerda para dados da loja e transação
-        store + "\n" +
-        "CNPJ: " + cnpj + "\n" +
-        nsu + "\n" +
-        "--------------------------------\n\n\n\n"
-    );
+    escText += linha + "\n";
+    
+    // Data/Cartão à esquerda e Valor grande à direita
+    escText += "\x1B\x61\x00" + datetime + "\n" + card + "\n";
+    escText += "\x1B\x61\x02\x1D\x21\x11" + value + "\x1D\x21\x00\n";
+    
+    escText += linha + "\n";
+    
+    // Tipo de Transação centralizado e em negrito
+    escText += "\x1B\x61\x01\x1B\x45\x01" + type + "\x1B\x45\x00\n";
+    
+    escText += linha + "\n";
+    
+    // Dados da loja e códigos técnicos alinhados perfeitamente à esquerda
+    escText += "\x1B\x61\x00";
+    escText += "\x1B\x45\x01" + store + "\x1B\x45\x00\n";
+    escText += "CNPJ: " + cnpj + "\n";
+    escText += "NSU: 41132712554    CV: 712954\n";
+    escText += "LABEL: DEBITO\n";
+    escText += "AID: A00000004942010\n";
+    escText += "ARQC: C03308DEFEE1805E\n";
+    
+    escText += linha + "\n\n\n\n";
 
     return escText;
 }
