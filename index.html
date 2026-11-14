@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Comprovantes 58mm</title>
+    <title>Gerador de Comprovantes PagBank 58mm</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,13 +33,14 @@
         label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
         input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         
+        /* SIMULAÇÃO VISUAL DO RECIBO 58mm */
         .receipt {
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
             line-height: 1.2;
             background: #fff;
-            padding: 10px;
-            width: 290px;
+            padding: 15px;
+            width: 280px;
             margin: 0 auto;
             border: 1px dashed #bbb;
             color: #000;
@@ -55,7 +56,7 @@
         }
         .receipt-logo { font-weight: bold; font-size: 13px; }
         .receipt-right-info { text-align: right; font-size: 9px; }
-        .receipt-reprint { text-align: center; font-size: 10px; font-weight: bold; background: #000; color: #fff; padding: 2px 0; margin: 4px 0; }
+        .receipt-reprint { background: #000; color: #fff; text-align: center; font-size: 10px; font-weight: bold; padding: 3px 0; margin: 6px 0; }
         .receipt-amount-row {
             display: flex;
             justify-content: space-between;
@@ -65,11 +66,13 @@
             margin-bottom: 6px;
         }
         .receipt-datetime { font-size: 10px; }
-        .receipt-value { font-size: 15px; font-weight: bold; text-align: right; }
+        .receipt-value { font-size: 16px; font-weight: bold; text-align: right; }
         .receipt-center { text-align: center; font-weight: bold; font-size: 11px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
         .receipt-footer-grid {
-            font-size: 9px;
-            line-height: 1.3;
+            font-size: 8.5px;
+            display: flex;
+            justify-content: space-between;
+            line-height: 1.25;
         }
 
         .btn {
@@ -131,20 +134,16 @@ AUT: 314271</textarea>
             <input type="text" id="inp-cnpj" value="52.346.711/0001-16" oninput="updateReceipt()">
         </div>
         <div class="form-group">
-            <label>CV e NSU (Lado a Lado)</label>
-            <input type="text" id="inp-cv-nsu" value="CV: 712554    NSU: 41132712554" oninput="updateReceipt()">
+            <label>Dados Coluna Esquerda (CV, LABEL, AID)</label>
+            <textarea id="inp-left" rows="3" oninput="updateReceipt()">CV: 712554
+LABEL: DEBITO
+AID: A00000004942010</textarea>
         </div>
         <div class="form-group">
-            <label>LABEL e SNPOS (Lado a Lado)</label>
-            <input type="text" id="inp-lbl-snpos" value="LABEL: DEBITO    SNPOS: J901" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>AID</label>
-            <input type="text" id="inp-aid" value="AID: A00000004942010" oninput="updateReceipt()">
-        </div>
-        <div class="form-group">
-            <label>ARQC</label>
-            <input type="text" id="inp-arqc" value="ARQC: C03308DEFEE1805E" oninput="updateReceipt()">
+            <label>Dados Coluna Direita (NSU, SNPOS, ARQC)</label>
+            <textarea id="inp-right" rows="3" oninput="updateReceipt()">NSU: 41132712554
+SNPOS: J90108352150
+ARQC: C03308DEFEE1805E</textarea>
         </div>
 
         <button class="btn" onclick="printBluetooth()">🖨️ Imprimir via Web Bluetooth</button>
@@ -176,13 +175,12 @@ AUT: 314271</textarea>
                 VENDA DEBITO ELO
             </div>
 
+            <div style="font-size: 9px; font-weight: bold; margin-bottom: 2px;" id="prev-store">STEAKTOPIA</div>
+            <div style="font-size: 9px; margin-bottom: 4px;">CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span></div>
+
             <div class="receipt-footer-grid">
-                <strong id="prev-store">STEAKTOPIA</strong><br>
-                CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span><br>
-                <span id="prev-cv-nsu">CV: 712554    NSU: 41132712554</span><br>
-                <span id="prev-lbl-snpos">LABEL: DEBITO    SNPOS: J901</span><br>
-                <span id="prev-aid">AID: A00000004942010</span><br>
-                <span id="prev-arqc">ARQC: C03308DEFEE1805E</span>
+                <div style="width: 48%;" id="prev-left">CV: 712554<br>LABEL: DEBITO<br>AID: A00000004942010</div>
+                <div style="width: 48%; text-align: right;" id="prev-right">NSU: 41132712554<br>SNPOS: J90108352150<br>ARQC: C03308DEFEE1805E</div>
             </div>
         </div>
     </div>
@@ -199,10 +197,8 @@ function updateReceipt() {
     document.getElementById('prev-type').innerText = document.getElementById('inp-type').value;
     document.getElementById('prev-store').innerText = document.getElementById('inp-store').value;
     document.getElementById('prev-cnpj').innerText = document.getElementById('inp-cnpj').value;
-    document.getElementById('prev-cv-nsu').innerText = document.getElementById('inp-cv-nsu').value;
-    document.getElementById('prev-lbl-snpos').innerText = document.getElementById('inp-lbl-snpos').value;
-    document.getElementById('prev-aid').innerText = document.getElementById('inp-aid').value;
-    document.getElementById('prev-arqc').innerText = document.getElementById('inp-arqc').value;
+    document.getElementById('prev-left').innerHTML = document.getElementById('inp-left').value.replace(/\n/g, '<br>');
+    document.getElementById('prev-right').innerHTML = document.getElementById('inp-right').value.replace(/\n/g, '<br>');
 }
 
 function buildEscPosText() {
@@ -216,56 +212,60 @@ function buildEscPosText() {
     const store = document.getElementById('inp-store').value;
     const cnpj = document.getElementById('inp-cnpj').value;
     
-    const cvNsu = document.getElementById('inp-cv-nsu').value;
-    const lblSnpos = document.getElementById('inp-lbl-snpos').value;
-    const aid = document.getElementById('inp-aid').value;
-    const arqc = document.getElementById('inp-arqc').value;
+    const leftLines = document.getElementById('inp-left').value.split('\n');
+    const rightLines = document.getElementById('inp-right').value.split('\n');
     
-    // Linha divisória exata de 32 colunas
     const linha = "--------------------------------";
 
     let escText = "\x1B\x40"; // Inicializa impressora
     
-    // Cabeçalho: Nome à esquerda e Via à direita na mesma linha
+    // Cabeçalho: Nome à esquerda e Via à direita na mesma linha (32 colunas)
     escText += "\x1B\x61\x00";
-    let cabecalhoEsquerda = brand;
-    let cabecalhoDireita = via[0] || "";
-    let espacosCab = " ".repeat(Math.max(1, 32 - (cabecalhoEsquerda.length + cabecalhoDireita.length)));
-    escText += cabecalhoEsquerda + espacosCab + cabecalhoDireita + "\n";
+    let cabEsq = "(o) " + brand;
+    let cabDir = via[0] || "";
+    let espCab = " ".repeat(Math.max(1, 32 - (cabEsq.length + cabDir.length)));
+    escText += cabEsq + espCab + cabDir + "\n";
     
     if (via[1]) {
-        let espacosAut = " ".repeat(Math.max(0, 32 - via[1].length));
-        escText += espacosAut + via[1] + "\n";
+        let espAut = " ".repeat(Math.max(0, 32 - via[1].length));
+        escText += espAut + via[1] + "\n";
     }
 
     if (status.trim() !== "") {
         escText += linha + "\n";
-        // Faixa preta com texto invertido para o status (reimpressão)
+        // Faixa preta com texto invertido (ESC/POS Inverted Mode)
         escText += "\x1B\x61\x01\x1D\x42\x01 " + status + " \x1D\x42\x00\x1B\x61\x00\n";
     }
 
     escText += linha + "\n";
     
-    // Data/Cartão à esquerda e Valor ao lado direito
+    // Data/Cartão à esquerda e Valor destacado à direita
     escText += datetime + "\n";
-    let espacosVal = " ".repeat(Math.max(1, 32 - card.length - value.length));
-    escText += card + espacosVal + "\x1B\x45\x01" + value + "\x1B\x45\x00\n";
+    let espVal = " ".repeat(Math.max(1, 32 - card.length - value.length));
+    escText += card + espVal + "\x1B\x45\x01" + value + "\x1B\x45\x00\n";
     
     escText += linha + "\n";
     
-    // Tipo de Transação centralizado e em negrito
+    // Tipo de transação centralizado e em negrito
     escText += "\x1B\x61\x01\x1B\x45\x01" + type + "\x1B\x45\x00\n";
     
     escText += linha + "\n";
     
-    // Dados da loja e códigos organizados sem corromper linhas
+    // Estabelecimento e CNPJ
     escText += "\x1B\x61\x00";
     escText += "\x1B\x45\x01" + store + "\x1B\x45\x00\n";
     escText += "CNPJ: " + cnpj + "\n";
-    escText += cvNsu + "\n";
-    escText += lblSnpos + "\n";
-    escText += aid + "\n";
-    escText += arqc + "\n";
+
+    // Rodapé em duas colunas paralelas exatas (largura total 32 colunas)
+    let maxRows = Math.max(leftLines.length, rightLines.length);
+    for (let i = 0; i < maxRows; i++) {
+        let lText = (leftLines[i] || "").trim();
+        let rText = (rightLines[i] || "").trim();
+        
+        // Se a linha combinada passar de 32 chars, ajustamos o espaçamento dinamicamente
+        let spacesCount = Math.max(1, 32 - (lText.length + rText.length));
+        escText += lText + " ".repeat(spacesCount) + rText + "\n";
+    }
     
     escText += linha + "\n\n\n\n";
 
@@ -291,48 +291,3 @@ async function printBluetooth() {
         const device = await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
             optionalServices: printerServices
-        });
-
-        const server = await device.gatt.connect();
-        const services = await server.getPrimaryServices();
-
-        let writeCharacteristic = null;
-        for (const service of services) {
-            const characteristics = await service.getCharacteristics();
-            for (const char of characteristics) {
-                if (char.properties.write || char.properties.writeWithoutResponse) {
-                    writeCharacteristic = char;
-                    break;
-                }
-            }
-            if (writeCharacteristic) break;
-        }
-
-        if (!writeCharacteristic) {
-            alert("Impressora ligada, mas o canal de escrita não foi encontrado.");
-            return;
-        }
-
-        const encoder = new TextEncoder();
-        const data = encoder.encode(buildEscPosText());
-
-        const chunkSize = 20;
-        for (let i = 0; i < data.length; i += chunkSize) {
-            const chunk = data.slice(i, i + chunkSize);
-            if (writeCharacteristic.properties.writeWithoutResponse) {
-                await writeCharacteristic.writeValueWithoutResponse(chunk);
-            } else {
-                await writeCharacteristic.writeValue(chunk);
-            }
-        }
-
-        alert("Comprovativo impresso com sucesso!");
-    } catch (error) {
-        console.error(error);
-        alert("Erro: " + error.message + "\n\nVerifique se o Bluetooth e a Localização (GPS) estão ligados.");
-    }
-}
-</script>
-
-</body>
-</html>
