@@ -35,15 +35,15 @@
         
         .receipt {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 9px;
-            line-height: 1.1;
+            font-size: 11px;
+            line-height: 1.2;
             background: #fff;
             padding: 10px;
             width: 290px;
             margin: 0 auto;
             border: 1px dashed #bbb;
             color: #000;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
         }
         .receipt-header {
             display: flex;
@@ -53,9 +53,9 @@
             padding-bottom: 6px;
             margin-bottom: 6px;
         }
-        .receipt-logo { font-weight: bold; font-size: 12px; }
-        .receipt-right-info { text-align: right; font-size: 8px; }
-        .receipt-reprint { text-align: center; font-size: 9px; font-weight: bold; background: #000; color: #fff; padding: 2px 0; margin: 4px 0; }
+        .receipt-logo { font-weight: bold; font-size: 13px; }
+        .receipt-right-info { text-align: right; font-size: 9px; }
+        .receipt-reprint { text-align: center; font-size: 10px; font-weight: bold; background: #000; color: #fff; padding: 2px 0; margin: 4px 0; }
         .receipt-amount-row {
             display: flex;
             justify-content: space-between;
@@ -64,13 +64,12 @@
             padding-bottom: 6px;
             margin-bottom: 6px;
         }
-        .receipt-datetime { font-size: 9px; }
-        .receipt-value { font-size: 14px; font-weight: bold; text-align: right; }
-        .receipt-center { text-align: center; font-weight: bold; font-size: 10px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
+        .receipt-datetime { font-size: 10px; }
+        .receipt-value { font-size: 15px; font-weight: bold; text-align: right; }
+        .receipt-center { text-align: center; font-weight: bold; font-size: 11px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
         .receipt-footer-grid {
-            font-size: 8px;
-            display: flex;
-            justify-content: space-between;
+            font-size: 9px;
+            line-height: 1.3;
         }
 
         .btn {
@@ -132,16 +131,20 @@ AUT: 314271</textarea>
             <input type="text" id="inp-cnpj" value="52.346.711/0001-16" oninput="updateReceipt()">
         </div>
         <div class="form-group">
-            <label>Dados Coluna Esquerda (CV, LABEL, AID)</label>
-            <textarea id="inp-left-codes" rows="3" oninput="updateReceipt()">CV: 712554
-LABEL: DEBITO
-AID: A00000004942010</textarea>
+            <label>CV e NSU (Lado a Lado)</label>
+            <input type="text" id="inp-cv-nsu" value="CV: 712554    NSU: 41132712554" oninput="updateReceipt()">
         </div>
         <div class="form-group">
-            <label>Dados Coluna Direita (NSU, SNPOS, ARQC)</label>
-            <textarea id="inp-right-codes" rows="3" oninput="updateReceipt()">NSU: 41132712554
-SNPOS: J90108352150
-ARQC: C03308DEFEE1805E</textarea>
+            <label>LABEL e SNPOS (Lado a Lado)</label>
+            <input type="text" id="inp-lbl-snpos" value="LABEL: DEBITO    SNPOS: J901" oninput="updateReceipt()">
+        </div>
+        <div class="form-group">
+            <label>AID</label>
+            <input type="text" id="inp-aid" value="AID: A00000004942010" oninput="updateReceipt()">
+        </div>
+        <div class="form-group">
+            <label>ARQC</label>
+            <input type="text" id="inp-arqc" value="ARQC: C03308DEFEE1805E" oninput="updateReceipt()">
         </div>
 
         <button class="btn" onclick="printBluetooth()">🖨️ Imprimir via Web Bluetooth</button>
@@ -152,7 +155,7 @@ ARQC: C03308DEFEE1805E</textarea>
         <div class="receipt" id="receipt-preview">
             <div class="receipt-header">
                 <div>
-                    <div class="receipt-logo" id="prev-brand">(o) PagBank</div>
+                    <div class="receipt-logo" id="prev-brand">PagBank</div>
                 </div>
                 <div class="receipt-right-info" id="prev-via">
                     VIA ESTABELECIMENTO<br>AUT: 314271
@@ -164,7 +167,7 @@ ARQC: C03308DEFEE1805E</textarea>
             <div class="receipt-amount-row">
                 <div>
                     <div class="receipt-datetime" id="prev-datetime">11/NOV/2026 11:32</div>
-                    <div style="font-size: 8px;" id="prev-card">************1793</div>
+                    <div style="font-size: 9px;" id="prev-card">************1793</div>
                 </div>
                 <div class="receipt-value">R$<span id="prev-value">22,90</span></div>
             </div>
@@ -173,12 +176,13 @@ ARQC: C03308DEFEE1805E</textarea>
                 VENDA DEBITO ELO
             </div>
 
-            <div style="font-size: 8px; font-weight: bold; margin-bottom: 3px;" id="prev-store">STEAKTOPIA</div>
-            <div style="font-size: 8px; margin-bottom: 3px;">CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span></div>
-            
             <div class="receipt-footer-grid">
-                <div style="width: 48%;" id="prev-left">CV: 712554<br>LABEL: DEBITO<br>AID: A00000004942010</div>
-                <div style="width: 48%; text-align: right;" id="prev-right">NSU: 41132712554<br>SNPOS: J90108352150<br>ARQC: C03308DEFEE1805E</div>
+                <strong id="prev-store">STEAKTOPIA</strong><br>
+                CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span><br>
+                <span id="prev-cv-nsu">CV: 712554    NSU: 41132712554</span><br>
+                <span id="prev-lbl-snpos">LABEL: DEBITO    SNPOS: J901</span><br>
+                <span id="prev-aid">AID: A00000004942010</span><br>
+                <span id="prev-arqc">ARQC: C03308DEFEE1805E</span>
             </div>
         </div>
     </div>
@@ -186,7 +190,7 @@ ARQC: C03308DEFEE1805E</textarea>
 
 <script>
 function updateReceipt() {
-    document.getElementById('prev-brand').innerText = "(o) " + document.getElementById('inp-brand').value;
+    document.getElementById('prev-brand').innerText = document.getElementById('inp-brand').value;
     document.getElementById('prev-via').innerHTML = document.getElementById('inp-via').value.replace(/\n/g, '<br>');
     document.getElementById('prev-status').innerText = document.getElementById('inp-status').value;
     document.getElementById('prev-datetime').innerText = document.getElementById('inp-datetime').value;
@@ -195,8 +199,10 @@ function updateReceipt() {
     document.getElementById('prev-type').innerText = document.getElementById('inp-type').value;
     document.getElementById('prev-store').innerText = document.getElementById('inp-store').value;
     document.getElementById('prev-cnpj').innerText = document.getElementById('inp-cnpj').value;
-    document.getElementById('prev-left').innerHTML = document.getElementById('inp-left-codes').value.replace(/\n/g, '<br>');
-    document.getElementById('prev-right').innerHTML = document.getElementById('inp-right-codes').value.replace(/\n/g, '<br>');
+    document.getElementById('prev-cv-nsu').innerText = document.getElementById('inp-cv-nsu').value;
+    document.getElementById('prev-lbl-snpos').innerText = document.getElementById('inp-lbl-snpos').value;
+    document.getElementById('prev-aid').innerText = document.getElementById('inp-aid').value;
+    document.getElementById('prev-arqc').innerText = document.getElementById('inp-arqc').value;
 }
 
 function buildEscPosText() {
@@ -210,67 +216,58 @@ function buildEscPosText() {
     const store = document.getElementById('inp-store').value;
     const cnpj = document.getElementById('inp-cnpj').value;
     
-    const leftLines = document.getElementById('inp-left-codes').value.split('\n');
-    const rightLines = document.getElementById('inp-right-codes').value.split('\n');
+    const cvNsu = document.getElementById('inp-cv-nsu').value;
+    const lblSnpos = document.getElementById('inp-lbl-snpos').value;
+    const aid = document.getElementById('inp-aid').value;
+    const arqc = document.getElementById('inp-arqc').value;
     
-    // Linha de 42 caracteres para o modo fonte reduzida (condensado)
-    const linha = "------------------------------------------";
+    // Linha divisória exata de 32 colunas
+    const linha = "--------------------------------";
 
     let escText = "\x1B\x40"; // Inicializa impressora
     
-    // Ativa fonte menor / condensada (ESC m ou ESC ? dependendo do modelo, o comando padrão ESC \x0F ativa fonte condensada em impressoras térmicas ESC/POS)
-    escText += "\x0F"; 
-    
-    // Cabeçalho ajustado para 42 colunas
+    // Cabeçalho: Nome à esquerda e Via à direita na mesma linha
     escText += "\x1B\x61\x00";
-    let cabecalhoEsquerda = "(o) " + brand;
+    let cabecalhoEsquerda = brand;
     let cabecalhoDireita = via[0] || "";
-    let espacosCab = " ".repeat(Math.max(1, 42 - (cabecalhoEsquerda.length + cabecalhoDireita.length)));
+    let espacosCab = " ".repeat(Math.max(1, 32 - (cabecalhoEsquerda.length + cabecalhoDireita.length)));
     escText += cabecalhoEsquerda + espacosCab + cabecalhoDireita + "\n";
     
     if (via[1]) {
-        let espacosAut = " ".repeat(Math.max(1, 42 - via[1].length));
+        let espacosAut = " ".repeat(Math.max(0, 32 - via[1].length));
         escText += espacosAut + via[1] + "\n";
     }
 
     if (status.trim() !== "") {
         escText += linha + "\n";
-        escText += "\x1B\x61\x01\x1B\x45\x01" + status + "\x1B\x45\x00\n";
+        // Faixa preta com texto invertido para o status (reimpressão)
+        escText += "\x1B\x61\x01\x1D\x42\x01 " + status + " \x1D\x42\x00\x1B\x61\x00\n";
     }
 
     escText += linha + "\n";
     
-    // Data/Cartão à esquerda e Valor grande à direita
-    escText += "\x1B\x61\x00" + datetime + "\n" + card + "\n";
-    escText += "\x1B\x61\x02\x1D\x21\x01" + value + "\x1D\x21\x00\n"; // Valor proporcionalmente menor no modo condensado
+    // Data/Cartão à esquerda e Valor ao lado direito
+    escText += datetime + "\n";
+    let espacosVal = " ".repeat(Math.max(1, 32 - card.length - value.length));
+    escText += card + espacosVal + "\x1B\x45\x01" + value + "\x1B\x45\x00\n";
     
     escText += linha + "\n";
     
-    // Tipo de Transação centralizado
+    // Tipo de Transação centralizado e em negrito
     escText += "\x1B\x61\x01\x1B\x45\x01" + type + "\x1B\x45\x00\n";
     
     escText += linha + "\n";
     
-    // Estabelecimento e CNPJ
-    escText += "\x1B\x61\x00\x1B\x45\x01" + store + "\x1B\x45\x00\n";
-    escText += "CNPJ:" + cnpj + "\n";
-
-    // Rodapé em Duas Colunas com limite de 42 colunas
-    let maxRows = Math.max(leftLines.length, rightLines.length);
-    for (let i = 0; i < maxRows; i++) {
-        let lText = (leftLines[i] || "").trim();
-        let rText = (rightLines[i] || "").trim();
-        
-        let totalLen = lText.length + rText.length;
-        let espacos = totalLen < 41 ? " ".repeat(41 - totalLen) : " ";
-        
-        escText += lText + espacos + rText + "\n";
-    }
+    // Dados da loja e códigos organizados sem corromper linhas
+    escText += "\x1B\x61\x00";
+    escText += "\x1B\x45\x01" + store + "\x1B\x45\x00\n";
+    escText += "CNPJ: " + cnpj + "\n";
+    escText += cvNsu + "\n";
+    escText += lblSnpos + "\n";
+    escText += aid + "\n";
+    escText += arqc + "\n";
     
     escText += linha + "\n\n\n\n";
-    
-    // Desativa fonte condensada no final
-    escText += "\x12";
 
     return escText;
 }
