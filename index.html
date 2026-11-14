@@ -104,8 +104,8 @@
 AUT: 314271</textarea>
         </div>
         <div class="form-group">
-            <label>Status (ex: REIMPRESSÃO)</label>
-            <input type="text" id="inp-status" value="REIMPRESSÃO" oninput="updateReceipt()">
+            <label>Status (ex: REIMPRESSAO)</label>
+            <input type="text" id="inp-status" value="REIMPRESSAO" oninput="updateReceipt()">
         </div>
         <div class="form-group">
             <label>Data e Hora</label>
@@ -159,7 +159,7 @@ ARQC: C03308DEFEE1805E</textarea>
                 </div>
             </div>
 
-            <div class="receipt-reprint" id="prev-status">REIMPRESSÃO</div>
+            <div class="receipt-reprint" id="prev-status">REIMPRESSAO</div>
 
             <div class="receipt-amount-row">
                 <div>
@@ -217,7 +217,7 @@ function buildEscPosText() {
 
     let escText = "\x1B\x40"; // Inicializa impressora
     
-    // Cabeçalho: Logo (o) + PagBank e Via à direita simulada por espaçamento
+    // Cabeçalho ajustado para caber em 32 colunas exatas
     escText += "\x1B\x61\x00";
     let cabecalhoEsquerda = "(o) " + brand;
     let cabecalhoDireita = via[0] || "";
@@ -251,13 +251,17 @@ function buildEscPosText() {
     escText += "\x1B\x61\x00\x1B\x45\x01" + store + "\x1B\x45\x00\n";
     escText += "CNPJ:" + cnpj + "\n";
 
-    // Rodapé em Duas Colunas Paralelas (alinhado por caracteres exatos na linha de 32 chars)
+    // Rodapé em Duas Colunas com espaçamento seguro para evitar quebras
     let maxRows = Math.max(leftLines.length, rightLines.length);
     for (let i = 0; i < maxRows; i++) {
-        let lText = leftLines[i] || "";
-        let rText = rightLines[i] || "";
-        let espacosCol = " ".repeat(Math.max(1, 32 - (lText.length + rText.length)));
-        escText += lText + espacosCol + rText + "\n";
+        let lText = (leftLines[i] || "").trim();
+        let rText = (rightLines[i] || "").trim();
+        
+        // Garante que a soma dos tamanhos caiba confortavelmente na linha de 32 colunas
+        let totalLen = lText.length + rText.length;
+        let espacos = totalLen < 31 ? " ".repeat(31 - totalLen) : " ";
+        
+        escText += lText + espacos + rText + "\n";
     }
     
     escText += linha + "\n\n\n\n";
