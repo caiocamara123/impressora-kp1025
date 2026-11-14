@@ -33,7 +33,6 @@
         label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
         input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         
-        /* SIMULAÇÃO VISUAL DO RECIBO 58mm */
         .receipt {
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
@@ -233,8 +232,8 @@ function buildEscPosText() {
 
     if (status.trim() !== "") {
         escText += linha + "\n";
-        // Faixa preta com texto invertido (ESC/POS Inverted Mode)
-        escText += "\x1B\x61\x01\x1D\x42\x01 " + status + " \x1D\x42\x00\x1B\x61\x00\n";
+        // Status centralizado em negrito (compatível com todas as térmicas)
+        escText += "\x1B\x61\x01\x1B\x45\x01" + status + "\x1B\x45\x00\n";
     }
 
     escText += linha + "\n";
@@ -262,7 +261,6 @@ function buildEscPosText() {
         let lText = (leftLines[i] || "").trim();
         let rText = (rightLines[i] || "").trim();
         
-        // Se a linha combinada passar de 32 chars, ajustamos o espaçamento dinamicamente
         let spacesCount = Math.max(1, 32 - (lText.length + rText.length));
         escText += lText + " ".repeat(spacesCount) + rText + "\n";
     }
@@ -291,3 +289,48 @@ async function printBluetooth() {
         const device = await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
             optionalServices: printerServices
+        });
+
+        const server = await device.gatt.connect();
+        const services = await server.getPrimaryServices();
+
+        let writeCharacteristic = null;
+        for (const service of services) {
+            const characteristics = await service.getCharacteristics();
+            for (const char of characteristics) {
+                if (char.properties.write || char.properties.writeWithoutResponse) {
+                    writeCharacteristic = char;
+                    break;
+                }
+            }
+            if (writeCharacteristic) break;
+        }
+
+        if (!writeCharacteristic) {
+            alert("Impressora ligada, mas o canal de escrita não foi encontrado.");
+            return;
+        }
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(buildEscPosText());
+
+        const chunkSize = 20;
+        for (let i = 0; i < data.length; i += chunkSize) {
+            const chunk = data.slice(i, i + chunkSize);
+            if (writeCharacteristic.properties.writeWithoutResponse) {
+                await writeCharacteristic.writeValueWithoutResponse(chunk);
+            } else {
+                await writeCharacteristic.writeValue(chunk);
+            }
+        }
+
+        alert("Comprovativo impresso com sucesso!");
+    } catch (error) {
+        console.error(error);
+        alert("Erro: " + error.message + "\n\nVerifique se o Bluetooth e a Localização (GPS) estão ligados.");
+    }
+}
+</script>
+
+</body>
+</html>
