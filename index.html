@@ -35,15 +35,15 @@
         
         .receipt {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            line-height: 1.2;
+            font-size: 9px;
+            line-height: 1.1;
             background: #fff;
             padding: 10px;
             width: 290px;
             margin: 0 auto;
             border: 1px dashed #bbb;
             color: #000;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.5px;
         }
         .receipt-header {
             display: flex;
@@ -53,9 +53,9 @@
             padding-bottom: 6px;
             margin-bottom: 6px;
         }
-        .receipt-logo { font-weight: bold; font-size: 13px; }
-        .receipt-right-info { text-align: right; font-size: 9px; }
-        .receipt-reprint { text-align: center; font-size: 10px; font-weight: bold; background: #000; color: #fff; padding: 2px 0; margin: 4px 0; }
+        .receipt-logo { font-weight: bold; font-size: 12px; }
+        .receipt-right-info { text-align: right; font-size: 8px; }
+        .receipt-reprint { text-align: center; font-size: 9px; font-weight: bold; background: #000; color: #fff; padding: 2px 0; margin: 4px 0; }
         .receipt-amount-row {
             display: flex;
             justify-content: space-between;
@@ -64,11 +64,11 @@
             padding-bottom: 6px;
             margin-bottom: 6px;
         }
-        .receipt-datetime { font-size: 10px; }
-        .receipt-value { font-size: 16px; font-weight: bold; text-align: right; }
-        .receipt-center { text-align: center; font-weight: bold; font-size: 11px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
+        .receipt-datetime { font-size: 9px; }
+        .receipt-value { font-size: 14px; font-weight: bold; text-align: right; }
+        .receipt-center { text-align: center; font-weight: bold; font-size: 10px; margin: 6px 0; border-bottom: 1px dashed #000; padding-bottom: 6px; }
         .receipt-footer-grid {
-            font-size: 9px;
+            font-size: 8px;
             display: flex;
             justify-content: space-between;
         }
@@ -164,7 +164,7 @@ ARQC: C03308DEFEE1805E</textarea>
             <div class="receipt-amount-row">
                 <div>
                     <div class="receipt-datetime" id="prev-datetime">11/NOV/2026 11:32</div>
-                    <div style="font-size: 9px;" id="prev-card">************1793</div>
+                    <div style="font-size: 8px;" id="prev-card">************1793</div>
                 </div>
                 <div class="receipt-value">R$<span id="prev-value">22,90</span></div>
             </div>
@@ -173,8 +173,8 @@ ARQC: C03308DEFEE1805E</textarea>
                 VENDA DEBITO ELO
             </div>
 
-            <div style="font-size: 9px; font-weight: bold; margin-bottom: 4px;" id="prev-store">STEAKTOPIA</div>
-            <div style="font-size: 9px; margin-bottom: 4px;">CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span></div>
+            <div style="font-size: 8px; font-weight: bold; margin-bottom: 3px;" id="prev-store">STEAKTOPIA</div>
+            <div style="font-size: 8px; margin-bottom: 3px;">CNPJ: <span id="prev-cnpj">52.346.711/0001-16</span></div>
             
             <div class="receipt-footer-grid">
                 <div style="width: 48%;" id="prev-left">CV: 712554<br>LABEL: DEBITO<br>AID: A00000004942010</div>
@@ -213,19 +213,23 @@ function buildEscPosText() {
     const leftLines = document.getElementById('inp-left-codes').value.split('\n');
     const rightLines = document.getElementById('inp-right-codes').value.split('\n');
     
-    const linha = "--------------------------------";
+    // Linha de 42 caracteres para o modo fonte reduzida (condensado)
+    const linha = "------------------------------------------";
 
     let escText = "\x1B\x40"; // Inicializa impressora
     
-    // Cabeçalho ajustado para caber em 32 colunas exatas
+    // Ativa fonte menor / condensada (ESC m ou ESC ? dependendo do modelo, o comando padrão ESC \x0F ativa fonte condensada em impressoras térmicas ESC/POS)
+    escText += "\x0F"; 
+    
+    // Cabeçalho ajustado para 42 colunas
     escText += "\x1B\x61\x00";
     let cabecalhoEsquerda = "(o) " + brand;
     let cabecalhoDireita = via[0] || "";
-    let espacosCab = " ".repeat(Math.max(1, 32 - (cabecalhoEsquerda.length + cabecalhoDireita.length)));
+    let espacosCab = " ".repeat(Math.max(1, 42 - (cabecalhoEsquerda.length + cabecalhoDireita.length)));
     escText += cabecalhoEsquerda + espacosCab + cabecalhoDireita + "\n";
     
     if (via[1]) {
-        let espacosAut = " ".repeat(Math.max(1, 32 - via[1].length));
+        let espacosAut = " ".repeat(Math.max(1, 42 - via[1].length));
         escText += espacosAut + via[1] + "\n";
     }
 
@@ -238,7 +242,7 @@ function buildEscPosText() {
     
     // Data/Cartão à esquerda e Valor grande à direita
     escText += "\x1B\x61\x00" + datetime + "\n" + card + "\n";
-    escText += "\x1B\x61\x02\x1D\x21\x11" + value + "\x1D\x21\x00\n";
+    escText += "\x1B\x61\x02\x1D\x21\x01" + value + "\x1D\x21\x00\n"; // Valor proporcionalmente menor no modo condensado
     
     escText += linha + "\n";
     
@@ -251,20 +255,22 @@ function buildEscPosText() {
     escText += "\x1B\x61\x00\x1B\x45\x01" + store + "\x1B\x45\x00\n";
     escText += "CNPJ:" + cnpj + "\n";
 
-    // Rodapé em Duas Colunas com espaçamento seguro para evitar quebras
+    // Rodapé em Duas Colunas com limite de 42 colunas
     let maxRows = Math.max(leftLines.length, rightLines.length);
     for (let i = 0; i < maxRows; i++) {
         let lText = (leftLines[i] || "").trim();
         let rText = (rightLines[i] || "").trim();
         
-        // Garante que a soma dos tamanhos caiba confortavelmente na linha de 32 colunas
         let totalLen = lText.length + rText.length;
-        let espacos = totalLen < 31 ? " ".repeat(31 - totalLen) : " ";
+        let espacos = totalLen < 41 ? " ".repeat(41 - totalLen) : " ";
         
         escText += lText + espacos + rText + "\n";
     }
     
     escText += linha + "\n\n\n\n";
+    
+    // Desativa fonte condensada no final
+    escText += "\x12";
 
     return escText;
 }
